@@ -31,10 +31,10 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 resource "aws_instance" "ecs_instance" {
-  ami                    = "ami-05df0ea761147eda6" # Replace with a real AMI ID
+  ami                    = "ami-05df0ea761147eda6" # Replace with valid AMI for your region
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.ecs_sg.id] # FIXED
+  vpc_security_group_ids = [aws_security_group.ecs_sg.id]
 }
 
 resource "aws_s3_bucket" "app_bucket" {
@@ -46,23 +46,20 @@ resource "aws_s3_bucket_acl" "app_bucket_acl" {
   acl    = "private"
 }
 
+resource "aws_db_subnet_group" "db_subnet_group" {
+  name       = "my-db-subnet-group"
+  subnet_ids = [aws_subnet.public.id]
 }
 
 resource "aws_db_instance" "db" {
-
   engine               = "mysql"
   instance_class       = "db.t3.micro"
   allocated_storage    = 20
   username             = "admin"
   password             = "pass@1234"
   publicly_accessible  = true
-  skip_final_snapshot  = true              # FIXED (needed for creation without snapshot)
-  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name # FIXED
-}
-
-resource "aws_db_subnet_group" "db_subnet_group" {
-  name       = "my-db-subnet-group"
-  subnet_ids = [aws_subnet.public.id]
+  skip_final_snapshot  = true
+  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
 }
 
 resource "aws_ecs_cluster" "my_cluster" {
